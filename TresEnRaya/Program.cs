@@ -54,7 +54,7 @@ namespace TresEnRaya
                         break;
                     }
 
-                    if (x == -1 && y == -1)
+                    if (x == -1 || y == -1)
                     {
                         Console.WriteLine("Introduzca unas cordenadas correctas");
                         break;
