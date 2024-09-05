@@ -48,6 +48,12 @@ namespace TresEnRaya
                     y = SacarCordenadas(entrada, 0);
                     x = SacarCordenadas(entrada, 2);
 
+                    if (x >= 3 || y >= 3)
+                    {
+                        Console.WriteLine("Introduzca un numero del 0 al 2");
+                        break;
+                    }
+
                     if (x == -1 && y == -1)
                     {
                         Console.WriteLine("Introduzca unas cordenadas correctas");
