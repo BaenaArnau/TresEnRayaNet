@@ -10,6 +10,7 @@ namespace TresEnRaya
     {
         private static bool jugador = true;
         private static char[,] tablero = new char[3, 3];
+        private static bool acabado = false;
 
         /// <summary>
         /// Metodo de ejecucion principal del programa
@@ -25,7 +26,6 @@ namespace TresEnRaya
         /// </summary>
         static void Jugar()
         {
-            bool acabado = false;
             RellenarTablero();
             while (!acabado)
             {
@@ -48,42 +48,7 @@ namespace TresEnRaya
                     y = SacarCordenadas(entrada, 0);
                     x = SacarCordenadas(entrada, 2);
 
-                    if (x >= 3 || y >= 3)
-                    {
-                        Console.WriteLine("Introduzca un numero del 0 al 2");
-                        break;
-                    }
-
-                    if (x == -1 || y == -1)
-                    {
-                        Console.WriteLine("Introduzca unas cordenadas correctas");
-                        break;
-                    }
-
-                    if (!ComprobarCasilla(x,y))
-                    {
-                        Console.WriteLine("El espacio no esta disponible");
-                        break;
-                    }
-
-                    ColocarFicha(y,x);
-
-                    if (ComprobarGanador())
-                    {
-                        ImprimirTablero();
-                        acabado = true;
-                        Console.WriteLine("El " + numeroJugador + " ha ganado la partida!");
-                        break;
-                    }
-                    
-                    jugador = !jugador;
-
-                    if (!ComprobacionEspacio())
-                    {
-                        ImprimirTablero();
-                        acabado = true;
-                        Console.WriteLine("No queda espacio en el tablero");
-                    }
+                    if (Comprobaciones(x, y, numeroJugador)) break;
                 }
             }
             Console.WriteLine("La partida ha finalizado, presione cualquier tecla para salir");
@@ -91,37 +56,96 @@ namespace TresEnRaya
         }
 
         /// <summary>
+        /// Metodo que llama a otros metodos para realizar las comprobaciones del juego
+        /// </summary>
+        /// <param name="x">Valor del ejeX</param>
+        /// <param name="y">Valor del ejeY</param>
+        /// <param name="numeroJugador">Cadena de texto que nos devuelve que jugador esta jugando</param>
+        /// <returns>True si hay errores y false cuando esta bien</returns>
+        private static bool Comprobaciones(int x, int y, string numeroJugador)
+        {
+            if (x >= tablero.GetLength(1) || y >= tablero.GetLength(0))
+            {
+                Console.WriteLine("Introduzca un numero del 0 al 2");
+                return true;
+            }
+
+            if (x == -1 || y == -1)
+            {
+                Console.WriteLine("Introduzca unas cordenadas correctas");
+                return true;
+            }
+
+            if (!ComprobarCasilla(x,y))
+            {
+                Console.WriteLine("El espacio no esta disponible");
+                return true;
+            }
+
+            ColocarFicha(y,x);
+
+            if (ComprobarGanador())
+            {
+                ImprimirTablero();
+                acabado = true;
+                Console.WriteLine("El " + numeroJugador + " ha ganado la partida!");
+                return true;
+            }
+                    
+            jugador = !jugador;
+
+            if (!ComprobacionEspacio())
+            {
+                ImprimirTablero();
+                acabado = true;
+                Console.WriteLine("No queda espacio en el tablero");
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Metodo que imprime el estado del tablero
         /// </summary>
         static void ImprimirTablero()
         {
-            Console.WriteLine("  0 1 2");
+            string line = "";
+
+            Console.Write("    ");
+            for (int i = 0; i < tablero.GetLength(1); i++)
+            {
+                Console.Write(i + " ");
+            }
+            Console.WriteLine();
+
             for (int i = 0; i < tablero.GetLength(0); i++)
             {
-                string line = "";
-                
+                line = "";
+
                 for (int j = 0; j < tablero.GetLength(1); j++)
                 {
-                    line += tablero[i,j];
-                    if (j < 3 - 1)
+                    line += tablero[i, j];
+                    if (j < tablero.GetLength(1) - 1)
                         line += "|";
+
                     if (j == 0)
-                        Console.Write(i + " ");
+                        Console.Write(i + "   ");
                 }
                 Console.WriteLine(line);
-                if (i < 3 - 1)
+
+                if (i < tablero.GetLength(0) - 1)
                 {
-                    Console.Write("  ");
-                    for (int k = 0; k < 3; k++)
+                    Console.Write("    ");
+                    for (int k = 0; k < tablero.GetLength(1); k++)
                     {
                         Console.Write("-");
-                        if (k < 3 - 1)
-                            Console.Write("-");
+                        if (k < tablero.GetLength(1) - 1)
+                            Console.Write("+");
                     }
                     Console.WriteLine();
                 }
             }
-
         }
 
         /// <summary>
@@ -192,23 +216,60 @@ namespace TresEnRaya
         static bool ComprobarGanador()
         {
             char simbolo = jugador ? 'X' : 'O';
+            int contador;
+            int ejeY = 0;
+            int ejeX = tablero.GetLength(1) - 1;
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < tablero.GetLength(0); i++)
             {
-                if (tablero[i, 0] == simbolo && tablero[i, 1] == simbolo && tablero[i, 2] == simbolo)
-                    return true;
+                contador = 0;
+                for (int j = 0; j < tablero.GetLength(1); j++)
+                {
+                    if (tablero[i, j] == simbolo)
+                    {
+                        contador++;
+                        if (contador == tablero.GetLength(1))
+                            return true;
+                    }
+
+                }
             }
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < tablero.GetLength(1); i++)
             {
-                if (tablero[0, i] == simbolo && tablero[1, i] == simbolo && tablero[2, i] == simbolo)
-                    return true;
+                contador = 0;
+                for (int j = 0; j < tablero.GetLength(0); j++)
+                {
+                    if (tablero[j, i] == simbolo)
+                    {
+                        contador++;
+                        if (contador == tablero.GetLength(0))
+                            return true;
+                    }
+                }
             }
 
-            if ((tablero[0, 0] == simbolo && tablero[1, 1] == simbolo && tablero[2, 2] == simbolo) ||
-                (tablero[0, 2] == simbolo && tablero[1, 1] == simbolo && tablero[2, 0] == simbolo))
-                return true;
+            contador = 0;
+            for (int i = 0; i < tablero.GetLength(0); i++)
+            {
+                if (tablero[i, i] == simbolo)
+                {
+                    contador++;
+                    if (contador == tablero.GetLength(0))
+                        return true;
+                }
+            }
 
+            contador = 0;
+            for (int i = 0; i < tablero.GetLength(0); i++)
+            {
+                if (tablero[i, tablero.GetLength(0) - 1 - i] == simbolo)
+                {
+                    contador++;
+                    if (contador == tablero.GetLength(0))
+                        return true;
+                }
+            }
             return false;
         }
 
