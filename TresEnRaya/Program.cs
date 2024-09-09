@@ -26,6 +26,8 @@ namespace TresEnRaya
         /// </summary>
         static void Jugar()
         {
+            int x;
+            int y;
             int z = 0;
 
             RellenarTablero();
@@ -33,8 +35,8 @@ namespace TresEnRaya
             while (!acabado)
             {
                 string entrada;
-                int x = 0;
-                int y = 0;
+                x = 0;
+                y = 0;
                 
                 while (true)
                 {
@@ -123,7 +125,7 @@ namespace TresEnRaya
 
             ColocarFicha(y,x,z);
 
-            if (HayGanador())
+            if (HayGanador(z))
             {
                 ImprimirTablero(z);
                 acabado = true;
@@ -231,9 +233,7 @@ namespace TresEnRaya
             bool funciona = int.TryParse(cordenada , out int resultado);
 
             if (funciona)
-            {
                 return resultado;
-            }
 
             return -1;
         }
@@ -253,26 +253,37 @@ namespace TresEnRaya
                 return false;
         }
 
+        static bool HayGanador(int z)
+        {
+            if (HayGanador2D(z))
+                return true;
+            else if (HayGanador3D())
+                return true;
+            else
+                return false;
+        }
+
         /// <summary>
-        /// Metodo que comprueba si ha ganado alguien
+        /// Metodo que comprueba si ha ganado alguien en el area 3D
         /// </summary>
         /// <returns>Devuelve un boleano de true cuando ha ganado alguien y de false cuando no</returns>
-        static bool HayGanador()
+        static bool HayGanador3D()
         {
             char simbolo = jugador ? 'X' : 'O';
-            int contador;
+            int contador = 0;
 
+            
             for (int i = 0; i < tablero.GetLength(0); i++)
             {
-                contador = 0;
                 for (int j = 0; j < tablero.GetLength(1); j++)
                 {
+                    contador = 0;
                     for (int k = 0; k < tablero.GetLength(2); k++)
                     {
                         if (tablero[i, j, k] == simbolo)
                         {
                             contador++;
-                            if (contador == tablero.GetLength(1))
+                            if (contador == tablero.GetLength(1)) 
                                 return true;
                         }
                     }
@@ -284,22 +295,58 @@ namespace TresEnRaya
                 contador = 0;
                 for (int j = 0; j < tablero.GetLength(0); j++)
                 {
-                    for (int k = 0; k < tablero.GetLength(2); k++)
+                    if (tablero[i, j, j] == simbolo)
                     {
-                        if (tablero[j, i, k] == simbolo)
-                        {
-                            contador++;
-                            if (contador == tablero.GetLength(0))
-                                return true;
-                        }
+                        contador++;
+                        if (contador == tablero.GetLength(0))
+                            return true;
+                    }
+                }
+            }
+
+            for (int i = 0; i < tablero.GetLength(1); i++)
+            {
+                contador = 0;
+                for (int j = 0; j < tablero.GetLength(0); j++)
+                {
+                    if (tablero[j, i, j] == simbolo)
+                    {
+                        contador++;
+                        if (contador == tablero.GetLength(0))
+                            return true;
                     }
                 }
             }
 
             contador = 0;
-            for (int i = 0; i < tablero.GetLength(2); i++)
+            for (int i = 0; i < tablero.GetLength(0); i++)
             {
-                for (int j = 0; j < tablero.GetLength(0); j++)
+                if (tablero[i, i, i] == simbolo)
+                {
+                    contador++;
+                    if (contador == tablero.GetLength(0))
+                        return true;
+                }
+            }
+
+            contador = 0;
+            for (int i = 0; i < tablero.GetLength(0); i++)
+            {
+                for (int j = tablero.GetLength(1) - 1; j >= 0; j--)
+                {
+                    if (tablero[i, j, i] == simbolo)
+                    {
+                        contador++;
+                        if (contador == tablero.GetLength(0))
+                            return true;
+                    }
+                }
+            }
+
+            contador = 0;
+            for (int i = 0; i < tablero.GetLength(0); i++)
+            {
+                for (int j = tablero.GetLength(1) - 1; j >= 0; j--)
                 {
                     if (tablero[j, j, i] == simbolo)
                     {
@@ -311,11 +358,11 @@ namespace TresEnRaya
             }
 
             contador = 0;
-            for (int i = 0; i < tablero.GetLength(2); i++)
+            for (int i = 0; i < tablero.GetLength(0); i++)
             {
-                for (int j = 0; j < tablero.GetLength(0); j++)
+                for (int j = tablero.GetLength(1) - 1; j >= 0; j--)
                 {
-                    if (tablero[j, tablero.GetLength(0) - 1 - j,i] == simbolo)
+                    if (tablero[i, j, j] == simbolo)
                     {
                         contador++;
                         if (contador == tablero.GetLength(0))
@@ -324,39 +371,67 @@ namespace TresEnRaya
                 }
             }
 
-            //Comprobacion de horizontal en 3D
-            for (int i = 0; i < tablero.GetLength(2); i++)
-            {
-                contador = 0;
-                for (int j = 0; j < tablero.GetLength(0); j++)
-                {
-                    for (int k = 0; k < tablero.GetLength(1); k++)
-                    {
-                        if (tablero[j, k, i] == simbolo)
-                        {
-                            contador++;
-                            if (contador == tablero.GetLength(1))
-                                return true;
-                        }
-                    }
-                }
-            }
+            return false;
+        }
 
-            //Comprobacion de vertical en 3D
-            for (int i = 0; i < tablero.GetLength(2); i++)
+        /// <summary>
+        /// Metodo que comprueba si hay ganador en el area 2D
+        /// </summary>
+        /// <param name="z">Variable del eje Z</param>
+        /// <returns>Devuelve True si alguien ha ganado y False si na ha ganado nadie</returns>
+        static bool HayGanador2D(int z)
+        {
+            char simbolo = jugador ? 'X' : 'O';
+            int contador;
+
+            for (int i = 0; i < tablero.GetLength(0); i++)
             {
                 contador = 0;
                 for (int j = 0; j < tablero.GetLength(1); j++)
                 {
-                    for (int k = 0; k < tablero.GetLength(0); k++)
+                    if (tablero[i, j, z] == simbolo)
                     {
-                        if (tablero[k, j, i] == simbolo)
-                        {
-                            contador++;
-                            if (contador == tablero.GetLength(0))
-                                return true;
-                        }
+                        contador++;
+                        if (contador == tablero.GetLength(1))
+                            return true;
                     }
+
+                }
+            }
+
+            for (int i = 0; i < tablero.GetLength(1); i++)
+            {
+                contador = 0;
+                for (int j = 0; j < tablero.GetLength(0); j++)
+                {
+                    if (tablero[j, i, z] == simbolo)
+                    {
+                        contador++;
+                        if (contador == tablero.GetLength(0))
+                            return true;
+                    }
+                }
+            }
+
+            contador = 0;
+            for (int i = 0; i < tablero.GetLength(0); i++)
+            {
+                if (tablero[i, i, z] == simbolo)
+                {
+                    contador++;
+                    if (contador == tablero.GetLength(0))
+                        return true;
+                }
+            }
+
+            contador = 0;
+            for (int i = 0; i < tablero.GetLength(0); i++)
+            {
+                if (tablero[i, tablero.GetLength(0) - 1 - i, z] == simbolo)
+                {
+                    contador++;
+                    if (contador == tablero.GetLength(0))
+                        return true;
                 }
             }
             return false;
